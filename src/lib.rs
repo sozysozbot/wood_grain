@@ -1,15 +1,27 @@
 #[cfg(test)]
 mod tests {
+    use super::*;
     #[test]
-    fn it_works() {
-        use super::*;
-        let raw_wood = rawwood(584, 668, 40., 12.33);
-        raw_wood.save("rawwood_1233.png").unwrap();
-        let bright_wood = brightwood(584, 668, 40., 12.33);
-        bright_wood.save("brightwood_1233.png").unwrap();
+    fn rawwood_12() {
+        for i in 0..5 {
+            let raw_wood = rawwood(584, 668, 40., 12.);
+            raw_wood.save(format!("rawwood_12_{}.png", i)).unwrap();
+        }
+    }
+    #[test]
+    fn brightwood12() {
+        for i in 0..5 {
+            let bright = brightwood(584, 668, 40., 12.);
+            bright.save(format!("brightwood_12_{}.png", i)).unwrap();
+        }
+    }
 
-        let raw_wood = rawwood(584, 668, 40., 24.66);
-        raw_wood.save("rawwood_2466.png").unwrap();
+    #[test]
+    fn rawwood_24() {
+        for i in 0..5 {
+            let raw_wood = rawwood(584, 668, 40., 24.);
+            raw_wood.save(format!("rawwood_24_{}.png", i)).unwrap();
+        }
     }
 }
 
@@ -81,13 +93,18 @@ impl Noise {
     }
 }
 
+/// * `width`: width of the image to be generated
+/// * `height`: height of the image to be generated
+/// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
+/// * `length_scale`: denotes the average length of spacing between grains in pixels. 
 pub fn brightwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
     image::imageops::colorops::brighten(&rawwood(width, height, offsetstdev, length_scale), 20)
 }
 
-/// The center of the wood grain is randomly shifted in the x and y directions,
-/// and `offsetstdev` signifies how large the offset should be.
-/// `length_scale` has dimension: px per #.
+/// * `width`: width of the image to be generated
+/// * `height`: height of the image to be generated
+/// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
+/// * `length_scale`: denotes the average length of spacing between grains in pixels. 
 pub fn rawwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
     use rand::Rng;
     let mut imgbuf = image::RgbImage::new(width, height);
@@ -103,6 +120,8 @@ pub fn rawwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> 
     let distr = rand_distr::Normal::new(0., offsetstdev).unwrap();
     let offset_x = rng.sample(distr);
     let offset_y = rng.sample(distr);
+
+    // There is an abs later in the function, so we only need from 0 to pi.
     let phase = rng.sample(Uniform::from(0.0..std::f64::consts::PI));
 
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
