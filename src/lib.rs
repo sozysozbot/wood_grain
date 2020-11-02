@@ -3,23 +3,13 @@ mod tests {
     #[test]
     fn it_works() {
         use super::*;
-        let piece_dimension = 80;
-        let padding = 4;
+        let raw_wood = rawwood(584, 668, 40., 12.33);
+        raw_wood.save("rawwood_1233.png").unwrap();
+        let bright_wood = brightwood(584, 668, 40., 12.33);
+        bright_wood.save("brightwood_1233.png").unwrap();
 
-        let raw_wood = rawwood(
-            (piece_dimension + padding) * 6 + piece_dimension,
-            (piece_dimension + padding) * 7 + piece_dimension,
-            f64::from(piece_dimension) / 2.,
-        );
-
-        raw_wood.save("rawwood.png").unwrap();
-
-        let bright_wood = brightwood(
-            (piece_dimension + padding) * 6 + piece_dimension,
-            (piece_dimension + padding) * 7 + piece_dimension,
-            f64::from(piece_dimension) / 2.,
-        );
-        bright_wood.save("brightwood.png").unwrap();
+        let raw_wood = rawwood(584, 668, 40., 24.66);
+        raw_wood.save("rawwood_2466.png").unwrap();
     }
 }
 
@@ -91,18 +81,21 @@ impl Noise {
     }
 }
 
-pub fn brightwood(width: u32, height: u32, offsetstdev: f64) -> image::RgbImage {
-    image::imageops::colorops::brighten(&rawwood(width, height, offsetstdev), 20)
+pub fn brightwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
+    image::imageops::colorops::brighten(&rawwood(width, height, offsetstdev, length_scale), 20)
 }
 
-pub fn rawwood(width: u32, height: u32, offsetstdev: f64) -> image::RgbImage {
+/// The center of the wood grain is randomly shifted in the x and y directions,
+/// and `offsetstdev` signifies how large the offset should be.
+/// `length_scale` has dimension: px per #.
+pub fn rawwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
     use rand::Rng;
     let mut imgbuf = image::RgbImage::new(width, height);
 
     let noise = Noise::gen_noise(width as usize, height as usize);
 
     /* algorithm taken and modified from https://lodev.org/cgtutor/randomnoise.html#Wood */
-    let wavenumber = 0.0811; // dimension: # per px
+    let wavenumber = 1. / length_scale; // dimension: # per px
     let turb = 14.6; //makes twists
     let turb_size = 32.0; //initial size of the turbulence
 
