@@ -4,14 +4,14 @@ mod tests {
     #[test]
     fn rawwood_12() {
         for i in 0..5 {
-            let raw_wood = rawwood(584, 668, 40., 12.);
+            let raw_wood = wood(584, 668, 40., 12., &WOOD_1);
             raw_wood.save(format!("rawwood_12_{}.png", i)).unwrap();
         }
     }
     #[test]
     fn brightwood12() {
         for i in 0..5 {
-            let bright = brightwood(584, 668, 40., 12.);
+            let bright = wood(584, 668, 40., 12., &BRIGHT_WOOD);
             bright.save(format!("brightwood_12_{}.png", i)).unwrap();
         }
     }
@@ -19,7 +19,7 @@ mod tests {
     #[test]
     fn rawwood_24() {
         for i in 0..5 {
-            let raw_wood = rawwood(584, 668, 40., 24.);
+            let raw_wood = wood(584, 668, 40., 24., &WOOD_1);
             raw_wood.save(format!("rawwood_24_{}.png", i)).unwrap();
         }
     }
@@ -93,26 +93,41 @@ impl Noise {
     }
 }
 
-/// * `width`: width of the image to be generated
-/// * `height`: height of the image to be generated
-/// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
-/// * `length_scale`: denotes the average length of spacing between grains in pixels. 
-pub fn brightwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
-    image::imageops::colorops::brighten(&rawwood(width, height, offsetstdev, length_scale), 20)
+pub struct WoodProfile {
+    brightness_adjustment: i32,
+    dark_color: [u8; 3],
+    light_color: [u8; 3],
 }
+
+pub const BRIGHT_WOOD: WoodProfile = WoodProfile {
+    brightness_adjustment: 20,
+    dark_color: [120, 70, 70],
+    light_color: [208, 158, 70],
+};
+
+pub const WOOD_1: WoodProfile = WoodProfile {
+    brightness_adjustment: 0,
+    dark_color: [120, 70, 70],
+    light_color: [208, 158, 70],
+};
 
 /// * `width`: width of the image to be generated
 /// * `height`: height of the image to be generated
 /// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
-/// * `length_scale`: denotes the average length of spacing between grains in pixels. 
-pub fn rawwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> image::RgbImage {
+/// * `length_scale`: denotes the average length of spacing between grains in pixels.
+pub fn wood(
+    width: u32,
+    height: u32,
+    offsetstdev: f64,
+    length_scale: f64,
+    wood_profile: &WoodProfile,
+) -> image::RgbImage {
     use rand::Rng;
     let mut imgbuf = image::RgbImage::new(width, height);
 
     let noise = Noise::gen_noise(width as usize, height as usize);
 
     /* algorithm taken and modified from https://lodev.org/cgtutor/randomnoise.html#Wood */
-    let wavenumber = 1. / length_scale; // dimension: # per px
     let turb = 14.6; //makes twists
     let turb_size = 32.0; //initial size of the turbulence
 
@@ -129,12 +144,27 @@ pub fn rawwood(width: u32, height: u32, offsetstdev: f64, length_scale: f64) -> 
         let y_value_times_scale = f64::from(y) - f64::from(height) / 2. + offset_y; // dimension: px
         let dist_value_times_scale = x_value_times_scale.hypot(y_value_times_scale)
             + turb * noise.turbulence(f64::from(x), f64::from(y), turb_size) / 256.0;
-        let sine_value = 88.0
-            * ((wavenumber * dist_value_times_scale * std::f64::consts::PI + phase).sin())
-                .abs()
-                .powf(0.4);
-        *pixel = image::Rgb([120 + sine_value as u8, 70 + sine_value as u8, 70]);
+        let sine_value = (dist_value_times_scale / length_scale * std::f64::consts::PI + phase)
+            .sin()
+            .abs()
+            .powf(0.4);
+        *pixel = lerp_pixel(
+            image::Rgb(wood_profile.dark_color),
+            image::Rgb(wood_profile.light_color),
+            sine_value,
+        );
     }
 
-    imgbuf
+    image::imageops::colorops::brighten(&imgbuf, wood_profile.brightness_adjustment)
+}
+
+use interpolation::Lerp;
+
+fn lerp_pixel(a: image::Rgb<u8>, b: image::Rgb<u8>, t: f64) -> image::Rgb<u8> {
+    let t = t as f32;
+    image::Rgb([
+        (a.0[0]).lerp(&b.0[0], &t),
+        (a.0[1]).lerp(&b.0[1], &t),
+        (a.0[2]).lerp(&b.0[2], &t),
+    ])
 }

@@ -1,10 +1,10 @@
 [package]
 name = "wood_grain"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["jekto_vatimeliju <jekto.vatimeliju@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Algorithm taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs."
+description = "Generates a good-enough horizontal section of a wood. Algorithm is taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -13,3 +13,4 @@ image = "0.23.11"
 rand = "0.7.3"
 rand_distr = "0.3.0"
 cetkaik_core = "0.1.10"
+interpolation = "0.2.0"
