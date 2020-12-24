@@ -1,3 +1,4 @@
+#![warn(clippy::pedantic, clippy::nursery)]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,7 +35,7 @@ struct Noise {
 use rand::distributions::{Distribution, Uniform};
 
 impl Noise {
-    fn gen_noise(width: usize, height: usize) -> Noise {
+    fn gen_noise(width: usize, height: usize) -> Self {
         /* algorithm taken from https://lodev.org/cgtutor/randomnoise.html#Wood */
         let between = Uniform::from(0.0..1.0);
         let mut rng = rand::thread_rng();
@@ -47,7 +48,7 @@ impl Noise {
             noise.push(vec);
         }
 
-        Noise {
+        Self {
             width,
             height,
             data: noise,
@@ -115,6 +116,7 @@ pub const WOOD_1: WoodProfile = WoodProfile {
 /// * `height`: height of the image to be generated
 /// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
 /// * `length_scale`: denotes the average length of spacing between grains in pixels.
+#[must_use]
 pub fn wood(
     width: u32,
     height: u32,
@@ -144,7 +146,7 @@ pub fn wood(
         let y_value_times_scale = f64::from(y) - f64::from(height) / 2. + offset_y; // dimension: px
         let dist_value_times_scale = x_value_times_scale.hypot(y_value_times_scale)
             + turb * noise.turbulence(f64::from(x), f64::from(y), turb_size) / 256.0;
-        let sine_value = (dist_value_times_scale / length_scale * std::f64::consts::PI + phase)
+        let sine_value = (dist_value_times_scale / length_scale).mul_add(std::f64::consts::PI, phase)
             .sin()
             .abs()
             .powf(0.4);
