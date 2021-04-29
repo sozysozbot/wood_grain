@@ -6,14 +6,20 @@ mod tests {
     fn rawwood_12() {
         for i in 0..5 {
             let raw_wood = wood(584, 668, 40., 12., &WOOD_1);
-            raw_wood.unwrap().save(format!("rawwood_12_{}.png", i)).unwrap();
+            raw_wood
+                .unwrap()
+                .save(format!("rawwood_12_{}.png", i))
+                .unwrap();
         }
     }
     #[test]
     fn brightwood12() {
         for i in 0..5 {
             let bright = wood(584, 668, 40., 12., &BRIGHT_WOOD);
-            bright.unwrap().save(format!("brightwood_12_{}.png", i)).unwrap();
+            bright
+                .unwrap()
+                .save(format!("brightwood_12_{}.png", i))
+                .unwrap();
         }
     }
 
@@ -21,7 +27,10 @@ mod tests {
     fn rawwood_24() {
         for i in 0..5 {
             let raw_wood = wood(584, 668, 40., 24., &WOOD_1);
-            raw_wood.unwrap().save(format!("rawwood_24_{}.png", i)).unwrap();
+            raw_wood
+                .unwrap()
+                .save(format!("rawwood_24_{}.png", i))
+                .unwrap();
         }
     }
 }
@@ -116,7 +125,7 @@ pub const WOOD_1: WoodProfile = WoodProfile {
 /// * `height`: height of the image to be generated
 /// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
 /// * `length_scale`: denotes the average length of spacing between grains in pixels.
-/// 
+///
 /// # Errors
 /// Returns `BadVariance` error if `offsetstdev` is infinite.
 #[must_use]
@@ -149,10 +158,13 @@ pub fn wood(
         let y_value_times_scale = f64::from(y) - f64::from(height) / 2. + offset_y; // dimension: px
         let dist_value_times_scale = x_value_times_scale.hypot(y_value_times_scale)
             + turb * noise.turbulence(f64::from(x), f64::from(y), turb_size) / 256.0;
-        let sine_value = (dist_value_times_scale / length_scale).mul_add(std::f64::consts::PI, phase)
+
+        #[allow(clippy::cast_possible_truncation)]
+        let sine_value = (dist_value_times_scale / length_scale)
+            .mul_add(std::f64::consts::PI, phase)
             .sin()
             .abs()
-            .powf(0.4);
+            .powf(0.4) as f32;
         *pixel = lerp_pixel(
             image::Rgb(wood_profile.dark_color),
             image::Rgb(wood_profile.light_color),
@@ -160,13 +172,15 @@ pub fn wood(
         );
     }
 
-    Ok(image::imageops::colorops::brighten(&imgbuf, wood_profile.brightness_adjustment))
+    Ok(image::imageops::colorops::brighten(
+        &imgbuf,
+        wood_profile.brightness_adjustment,
+    ))
 }
 
 use interpolation::Lerp;
 
-fn lerp_pixel(a: image::Rgb<u8>, b: image::Rgb<u8>, t: f64) -> image::Rgb<u8> {
-    let t = t as f32;
+fn lerp_pixel(a: image::Rgb<u8>, b: image::Rgb<u8>, t: f32) -> image::Rgb<u8> {
     image::Rgb([
         (a.0[0]).lerp(&b.0[0], &t),
         (a.0[1]).lerp(&b.0[1], &t),
