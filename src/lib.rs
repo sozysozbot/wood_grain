@@ -6,14 +6,14 @@ mod tests {
     fn rawwood_12() {
         for i in 0..5 {
             let raw_wood = wood(584, 668, 40., 12., &WOOD_1);
-            raw_wood.save(format!("rawwood_12_{}.png", i)).unwrap();
+            raw_wood.unwrap().save(format!("rawwood_12_{}.png", i)).unwrap();
         }
     }
     #[test]
     fn brightwood12() {
         for i in 0..5 {
             let bright = wood(584, 668, 40., 12., &BRIGHT_WOOD);
-            bright.save(format!("brightwood_12_{}.png", i)).unwrap();
+            bright.unwrap().save(format!("brightwood_12_{}.png", i)).unwrap();
         }
     }
 
@@ -21,7 +21,7 @@ mod tests {
     fn rawwood_24() {
         for i in 0..5 {
             let raw_wood = wood(584, 668, 40., 24., &WOOD_1);
-            raw_wood.save(format!("rawwood_24_{}.png", i)).unwrap();
+            raw_wood.unwrap().save(format!("rawwood_24_{}.png", i)).unwrap();
         }
     }
 }
@@ -116,6 +116,9 @@ pub const WOOD_1: WoodProfile = WoodProfile {
 /// * `height`: height of the image to be generated
 /// * `offsetstdev`: signifies how large the offset should be (the center of the wood grain is randomly shifted in the x and y directions).
 /// * `length_scale`: denotes the average length of spacing between grains in pixels.
+/// 
+/// # Errors
+/// Returns `BadVariance` error if `offsetstdev` is infinite.
 #[must_use]
 pub fn wood(
     width: u32,
@@ -123,7 +126,7 @@ pub fn wood(
     offsetstdev: f64,
     length_scale: f64,
     wood_profile: &WoodProfile,
-) -> image::RgbImage {
+) -> Result<image::RgbImage, rand_distr::NormalError> {
     use rand::Rng;
     let mut imgbuf = image::RgbImage::new(width, height);
 
@@ -134,7 +137,7 @@ pub fn wood(
     let turb_size = 32.0; //initial size of the turbulence
 
     let mut rng = rand::thread_rng();
-    let distr = rand_distr::Normal::new(0., offsetstdev).unwrap();
+    let distr = rand_distr::Normal::new(0., offsetstdev)?;
     let offset_x = rng.sample(distr);
     let offset_y = rng.sample(distr);
 
@@ -157,7 +160,7 @@ pub fn wood(
         );
     }
 
-    image::imageops::colorops::brighten(&imgbuf, wood_profile.brightness_adjustment)
+    Ok(image::imageops::colorops::brighten(&imgbuf, wood_profile.brightness_adjustment))
 }
 
 use interpolation::Lerp;

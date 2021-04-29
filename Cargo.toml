@@ -1,6 +1,6 @@
 [package]
 name = "wood_grain"
-version = "0.1.5"
+version = "0.2.0"
 authors = ["jekto_vatimeliju <jekto.vatimeliju@gmail.com>"]
 edition = "2018"
 license = "MIT"
