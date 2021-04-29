@@ -1,15 +1,15 @@
 [package]
 name = "wood_grain"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["jekto_vatimeliju <jekto.vatimeliju@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Generates a good-enough horizontal section of a wood. Algorithm is taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs."
+description = "Generates a good-enough horizontal section of a wood. The algorithm is taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = "0.23.13"
+image = "0.23.14"
 rand = "0.8.3"
 rand_distr = "0.4.0"
 interpolation = "0.2.0"
