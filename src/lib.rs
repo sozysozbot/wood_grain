@@ -1,4 +1,5 @@
 #![warn(clippy::pedantic, clippy::nursery)]
+#![cfg_attr(not(test), no_std)]
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -34,6 +35,9 @@ mod tests {
         }
     }
 }
+
+extern crate alloc;
+use alloc::vec::Vec;
 
 struct Noise {
     width: usize,
@@ -151,7 +155,7 @@ pub fn wood(
     let offset_y = rng.sample(distr);
 
     // There is an abs later in the function, so we only need from 0 to pi.
-    let phase = rng.sample(Uniform::from(0.0..std::f64::consts::PI));
+    let phase = rng.sample(Uniform::from(0.0..core::f64::consts::PI));
 
     for (x, y, pixel) in imgbuf.enumerate_pixels_mut() {
         let x_value_times_scale = f64::from(x) - f64::from(width) / 2. + offset_x; // dimension: px
@@ -161,7 +165,7 @@ pub fn wood(
 
         #[allow(clippy::cast_possible_truncation)]
         let sine_value = (dist_value_times_scale / length_scale)
-            .mul_add(std::f64::consts::PI, phase)
+            .mul_add(core::f64::consts::PI, phase)
             .sin()
             .abs()
             .powf(0.4) as f32;

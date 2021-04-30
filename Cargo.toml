@@ -1,10 +1,10 @@
 [package]
 name = "wood_grain"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["jekto_vatimeliju <jekto.vatimeliju@gmail.com>"]
 edition = "2018"
 license = "MIT"
-description = "Generates a good-enough horizontal section of a wood. The algorithm is taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs."
+description = "Generates a good-enough horizontal section of a wood. The algorithm is taken from https://lodev.org/cgtutor/randomnoise.html#Wood and slightly modified to match my needs. "
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
